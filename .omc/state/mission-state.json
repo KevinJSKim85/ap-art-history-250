@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-21T16:57:16.634Z",
+  "updatedAt": "2026-07-21T17:47:14.510Z",
   "missions": [
     {
       "id": "session:96aadbbf-94cb-4fcf-8bdf-7c262b786366:none",
@@ -7,7 +7,7 @@
       "name": "none",
       "objective": "Session mission",
       "createdAt": "2026-07-21T16:30:19.612Z",
-      "updatedAt": "2026-07-21T16:57:16.634Z",
+      "updatedAt": "2026-07-21T17:47:14.510Z",
       "status": "done",
       "workerCount": 1,
       "taskCounts": {
@@ -27,7 +27,7 @@
           "currentStep": null,
           "latestUpdate": "completed",
           "completedSummary": null,
-          "updatedAt": "2026-07-21T16:57:16.634Z"
+          "updatedAt": "2026-07-21T17:47:14.510Z"
         }
       ],
       "timeline": [
@@ -294,6 +294,86 @@
           "agent": "general-purpose:ac2380a",
           "detail": "completed",
           "sourceKey": "session-stop:af964710c6eeb347a"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:45:58.402Z",
+          "at": "2026-07-21T17:45:58.402Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:46:28.208Z",
+          "at": "2026-07-21T17:46:28.208Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:46:42.536Z",
+          "at": "2026-07-21T17:46:42.536Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:46:52.372Z",
+          "at": "2026-07-21T17:46:52.372Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:46:56.974Z",
+          "at": "2026-07-21T17:46:56.974Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:47:01.171Z",
+          "at": "2026-07-21T17:47:01.171Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:47:04.103Z",
+          "at": "2026-07-21T17:47:04.103Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:47:07.393Z",
+          "at": "2026-07-21T17:47:07.393Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:47:10.495Z",
+          "at": "2026-07-21T17:47:10.495Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
+        },
+        {
+          "id": "session-stop:ae7098438f5f51586:2026-07-21T17:47:14.510Z",
+          "at": "2026-07-21T17:47:14.510Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ae7098438f5f51586"
         }
       ]
     }

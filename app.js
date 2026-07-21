@@ -173,6 +173,7 @@
       '<div class="progress-cap"><span>' + pct + '% learned</span><span>' + s.learned + ' / ' + s.total + '</span></div>' +
       '<div class="cta-row">' +
         '<button class="btn primary" onclick="location.hash=\'#/study\'">▶ Start studying' + (s.due ? " (" + s.due + " due)" : "") + '</button>' +
+        '<button class="btn" onclick="location.hash=\'#/quiz\'">Random quiz</button>' +
         '<button class="btn" onclick="location.hash=\'#/browse\'">Browse all works</button>' +
       '</div>' +
       '<div class="section-head"><h2>Content areas</h2><span class="muted">Tap to study one area</span></div>' +
@@ -356,8 +357,109 @@
       '</div>';
   }
 
+  /* ---------- random quiz (multiple choice) ---------- */
+  var QZ_KEY = "apah250.quiz";
+  var quiz = null;        // { qs:[{work, options:[work..], correct}], idx, chosen:[], scope }
+  var quizLen = 10, quizScope = 0;
+  function quizBest() { try { return JSON.parse(localStorage.getItem(QZ_KEY)) || {}; } catch (e) { return {}; } }
+  function quizSaveBest(pct) {
+    var b = quizBest();
+    b.last = pct; if (b.best == null || pct > b.best) b.best = pct;
+    try { localStorage.setItem(QZ_KEY, JSON.stringify(b)); } catch (e) {}
+  }
+  function buildQuiz(scope, len) {
+    var pool = WORKS.slice();
+    if (scope) pool = pool.filter(function (w) { return w.content_area == scope; });
+    shuffle(pool);
+    var subjects = pool.slice(0, Math.min(len, pool.length));
+    var qs = subjects.map(function (w) {
+      var same = WORKS.filter(function (x) { return x.content_area === w.content_area && x.id !== w.id; });
+      var distract = (same.length >= 3 ? same : WORKS.filter(function (x) { return x.id !== w.id; })).slice();
+      shuffle(distract);
+      var options = [w].concat(distract.slice(0, 3));
+      shuffle(options);
+      return { work: w, options: options, correct: options.indexOf(w) };
+    });
+    return { qs: qs, idx: 0, chosen: [], scope: scope || "" };
+  }
+  function viewQuiz() { setTab("quiz"); if (quiz) renderQuiz(); else renderQuizStart(); }
+  function renderQuizStart() {
+    setTab("quiz");
+    var b = quizBest();
+    var lenChips = [10, 20, 30].map(function (n) {
+      return '<button class="chip' + (quizLen === n ? " active" : "") + '" data-len="' + n + '">' + n + '</button>';
+    }).join("");
+    var areaChips = '<button class="chip' + (quizScope === 0 ? " active" : "") + '" data-scope="0">All</button>' +
+      Object.keys(AREA_NAMES).map(function (a) {
+        return '<button class="chip' + (quizScope == a ? " active" : "") + '" data-scope="' + a + '">' + a + '. ' + esc(AREA_NAMES[a].split(" &")[0]) + '</button>';
+      }).join("");
+    app.innerHTML = '<div class="quiz"><div class="quiz-start">' +
+      '<h2>Random quiz</h2><p>Multiple choice on the required works, shuffled fresh every time. Jump in whenever.</p>' +
+      '<div class="quiz-opts-label">Questions</div><div class="seg" id="len-seg">' + lenChips + '</div>' +
+      '<div class="quiz-opts-label">Scope</div><div class="seg" id="scope-seg">' + areaChips + '</div>' +
+      '<button class="btn primary" onclick="APAH.quizStart()">▶ Start quiz</button>' +
+      (b.best != null ? '<div class="quiz-best">Best ' + b.best + '%' + (b.last != null ? ' · last ' + b.last + '%' : '') + '</div>' : '') +
+      '</div></div>';
+    document.querySelectorAll("#len-seg .chip").forEach(function (c) { c.onclick = function () { quizLen = +c.dataset.len; renderQuizStart(); }; });
+    document.querySelectorAll("#scope-seg .chip").forEach(function (c) { c.onclick = function () { quizScope = +c.dataset.scope; renderQuizStart(); }; });
+  }
+  function renderQuiz() {
+    if (!quiz) return renderQuizStart();
+    if (quiz.idx >= quiz.qs.length) return renderQuizScore();
+    var q = quiz.qs[quiz.idx], w = q.work;
+    var chosen = quiz.chosen[quiz.idx], answered = chosen != null;
+    var progress = Math.round(quiz.idx / quiz.qs.length * 100);
+    var opts = q.options.map(function (o, i) {
+      var cls = "opt";
+      if (answered) { if (i === q.correct) cls += " correct"; else if (i === chosen) cls += " wrong"; }
+      return '<button class="' + cls + '" ' + (answered ? "disabled" : "") + ' onclick="APAH.answer(' + i + ')">' +
+        '<span class="k">' + (i + 1) + '</span>' +
+        '<span class="t"><b>' + esc(o.title) + '</b>' + (o.artist ? '<small>' + esc(o.artist) + '</small>' : '') + '</span></button>';
+    }).join("");
+    app.innerHTML = '<div class="quiz">' +
+      '<div class="quiz-top">' +
+        '<span class="counts"><b>' + (quiz.idx + 1) + '</b> / ' + quiz.qs.length + (quiz.scope ? ' · Area ' + quiz.scope : "") + '</span>' +
+        '<span class="study-bar"><i style="width:' + progress + '%"></i></span>' +
+        '<button class="nav-btn" title="Exit" onclick="APAH.quizExit()">✕</button>' +
+      '</div>' +
+      '<div class="flash"><div class="fig"><span class="tag">Area ' + w.content_area + '</span>' + imgTag(w) + '</div>' +
+        '<div class="face">' +
+          '<div class="quiz-prompt">Which work is this?</div>' +
+          '<div class="opts">' + opts + '</div>' +
+          (answered ? '<button class="quiz-next" onclick="APAH.quizNext()">' + (quiz.idx === quiz.qs.length - 1 ? "See results" : "Next") + '</button>' : "") +
+        '</div>' +
+      '</div></div>';
+  }
+  function renderQuizScore() {
+    var correct = 0; quiz.qs.forEach(function (q, i) { if (quiz.chosen[i] === q.correct) correct++; });
+    var total = quiz.qs.length, pct = total ? Math.round(correct / total * 100) : 0;
+    quizSaveBest(pct);
+    var col = pct >= 80 ? "var(--good)" : pct >= 50 ? "var(--warn)" : "var(--bad)";
+    var missed = quiz.qs.filter(function (q, i) { return quiz.chosen[i] !== q.correct; }).map(function (q) { return q.work; });
+    var missHtml = missed.length ?
+      '<div class="miss"><div class="miss-h">Review · ' + missed.length + '</div>' + missed.map(function (w) {
+        return '<a href="#/work/' + w.id + '">' + (w.image_url ? '<img loading="lazy" src="' + esc(w.image_url) + '" alt="">' : '') +
+          '<span><b>' + esc(w.title) + '</b><small>' + esc(w.artist || w.culture || "") + '</small></span></a>';
+      }).join("") + '</div>' :
+      '<p style="color:var(--good);font-weight:600;margin:14px 0 22px">Perfect score.</p>';
+    app.innerHTML = '<div class="quiz"><div class="quiz-score">' +
+      '<div class="ring" style="color:' + col + '">' + pct + '%</div>' +
+      '<h2>' + correct + ' / ' + total + ' correct</h2>' +
+      '<p>' + (quiz.scope ? "Area " + quiz.scope + " · " : "") + total + ' questions</p>' +
+      '</div>' + missHtml +
+      '<div class="cta-row" style="justify-content:center">' +
+        '<button class="btn primary" onclick="APAH.quizAgain()">New quiz</button>' +
+        '<button class="btn" onclick="APAH.quizExit()">Home</button>' +
+      '</div></div>';
+  }
+
   /* ---------- public actions ---------- */
   window.APAH = {
+    quizStart: function () { quiz = buildQuiz(quizScope, quizLen); renderQuiz(); },
+    answer: function (i) { if (!quiz || quiz.chosen[quiz.idx] != null) return; quiz.chosen[quiz.idx] = i; renderQuiz(); },
+    quizNext: function () { if (!quiz) return; quiz.idx++; renderQuiz(); },
+    quizAgain: function () { quiz = buildQuiz(quizScope, quizLen); renderQuiz(); },
+    quizExit: function () { quiz = null; go("#/"); },
     reveal: function () { if (session) { session.revealed = true; renderStudy(); } },
     rate: function (q) {
       if (!session) return;
@@ -382,6 +484,10 @@
         e.preventDefault(); APAH.rate([1, 3, 4, 5][+e.key - 1]);
       }
       else if (session.revealed && e.code === "Space") { e.preventDefault(); } // don't scroll the page
+    } else if (r.view === "quiz" && quiz && quiz.idx < quiz.qs.length) {
+      var answered = quiz.chosen[quiz.idx] != null;
+      if (!answered && ["1", "2", "3", "4"].indexOf(e.key) >= 0) { e.preventDefault(); APAH.answer(+e.key - 1); }
+      else if (answered && (e.code === "Space" || e.key === "Enter")) { e.preventDefault(); APAH.quizNext(); }
     }
   });
 
@@ -403,6 +509,7 @@
       case "work": viewWork(r.arg); break;
       case "search": viewSearch(r.arg); break;
       case "study": viewStudy(r.arg); break;
+      case "quiz": viewQuiz(); break;
       default: viewHome();
     }
   }
