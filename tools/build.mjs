@@ -22,6 +22,19 @@ let works = JSON.parse(fs.readFileSync(inPath, "utf8"));
 if (works.works) works = works.works;
 console.log(`Loaded ${works.length} works`);
 
+// Normalize Wikimedia image URLs to the sized Special:FilePath form so full-res
+// originals don't time out. Non-Wikimedia URLs are left as-is.
+function normImg(url) {
+  if (!url) return url;
+  // upload.wikimedia.org/wikipedia/<lang>/[thumb/]a/ab/FILENAME[/NNNpx-..]
+  let m = url.match(/upload\.wikimedia\.org\/wikipedia\/[^/]+\/(?:thumb\/)?[0-9a-fA-F]\/[0-9a-fA-F]{2}\/([^/?]+)/);
+  if (m) return "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(decodeURIComponent(m[1])) + "?width=1200";
+  m = url.match(/Special:FilePath\/([^?]+)/);
+  if (m) return "https://commons.wikimedia.org/wiki/Special:FilePath/" + m[1] + "?width=1200";
+  return url;
+}
+for (const w of works) w.image_url = normImg(w.image_url);
+
 // normalize + dedupe by title+artist (two different works can share a title)
 const seen = new Map();
 for (const w of works) {
