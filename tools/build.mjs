@@ -26,8 +26,9 @@ console.log(`Loaded ${works.length} works`);
 // originals don't time out. Non-Wikimedia URLs are left as-is.
 function normImg(url) {
   if (!url) return url;
-  // upload.wikimedia.org/wikipedia/<lang>/[thumb/]a/ab/FILENAME[/NNNpx-..]
-  let m = url.match(/upload\.wikimedia\.org\/wikipedia\/[^/]+\/(?:thumb\/)?[0-9a-fA-F]\/[0-9a-fA-F]{2}\/([^/?]+)/);
+  // Only rewrite Wikimedia COMMONS files (Special:FilePath resolves against Commons).
+  // Fair-use files on a local wiki (/wikipedia/en/ etc.) are NOT on Commons — leave them.
+  let m = url.match(/upload\.wikimedia\.org\/wikipedia\/commons\/(?:thumb\/)?[0-9a-fA-F]\/[0-9a-fA-F]{2}\/([^/?]+)/);
   if (m) return "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(decodeURIComponent(m[1])) + "?width=1200";
   m = url.match(/Special:FilePath\/([^?]+)/);
   if (m) return "https://commons.wikimedia.org/wiki/Special:FilePath/" + m[1] + "?width=1200";
