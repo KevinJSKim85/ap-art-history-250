@@ -66,11 +66,26 @@
   function imgTag(w, cls) {
     if (w.image_url) {
       return '<img loading="lazy" src="' + esc(w.image_url) + '" alt="' + esc(w.title) + '" ' +
-        'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+        'data-orig="' + esc(w.image_url) + '" onerror="APAH_imgErr(this)">' +
         '<div class="ph" style="display:none">Image unavailable</div>';
     }
     return '<div class="ph">No image</div>';
   }
+  // Retry a failed image a few times (transient 429/timeout) before giving up.
+  window.APAH_imgErr = function (img) {
+    var n = +(img.getAttribute("data-retry") || 0);
+    var orig = img.getAttribute("data-orig") || img.src;
+    if (n < 3) {
+      img.setAttribute("data-retry", n + 1);
+      setTimeout(function () {
+        img.src = orig + (orig.indexOf("?") >= 0 ? "&" : "?") + "_r=" + (n + 1);
+      }, 700 * (n + 1));
+    } else {
+      img.style.display = "none";
+      var ph = img.nextElementSibling;
+      if (ph && ph.classList.contains("ph")) ph.style.display = "flex";
+    }
+  };
   var toastT;
   function toast(msg) {
     var t = $("#toast"); t.textContent = msg; t.classList.add("show");
@@ -227,7 +242,8 @@
     app.innerHTML =
       '<div class="detail"><div class="detail-grid">' +
         '<div class="detail-img">' + (w.image_url ?
-          '<img src="' + esc(w.image_url) + '" alt="' + esc(w.title) + '" onerror="this.parentElement.innerHTML=\'<div class=\\\'ph\\\'>Image unavailable</div>\'">' :
+          '<img src="' + esc(w.image_url) + '" alt="' + esc(w.title) + '" data-orig="' + esc(w.image_url) + '" onerror="APAH_imgErr(this)">' +
+          '<div class="ph" style="display:none">Image unavailable</div>' :
           '<div class="ph">No image</div>') + '</div>' +
         '<div class="detail-body">' +
           '<span class="area-tag">Area ' + w.content_area + ' · ' + esc(AREA_NAMES[w.content_area]) + '</span>' +
