@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__Claude_Browser__javascript_tool",
+  "tool_input_preview": "{\"action\":\"javascript_exec\",\"tabId\":\"seed\",\"text\":\"(async () => {\\n  const works = window.APAH_WORKS;\\n  let ok=0, fail=0; const failed=[];\\n  // test in small batches to avoid burst rate-limiting\\n  ...",
+  "error": "javascript_tool timed out after 30s. The Browser pane may be stuck (modal dialog, navigation hang, or unresponsive renderer). Check preview_console_logs for errors.",
+  "timestamp": "2026-07-21T16:27:31.749Z",
+  "retry_count": 1
+}
