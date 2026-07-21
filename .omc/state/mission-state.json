@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-21T16:34:54.981Z",
+  "updatedAt": "2026-07-21T16:38:41.140Z",
   "missions": [
     {
       "id": "session:96aadbbf-94cb-4fcf-8bdf-7c262b786366:none",
@@ -7,7 +7,7 @@
       "name": "none",
       "objective": "Session mission",
       "createdAt": "2026-07-21T16:30:19.612Z",
-      "updatedAt": "2026-07-21T16:34:54.981Z",
+      "updatedAt": "2026-07-21T16:38:41.140Z",
       "status": "done",
       "workerCount": 1,
       "taskCounts": {
@@ -27,7 +27,7 @@
           "currentStep": null,
           "latestUpdate": "completed",
           "completedSummary": null,
-          "updatedAt": "2026-07-21T16:34:54.981Z"
+          "updatedAt": "2026-07-21T16:38:41.140Z"
         }
       ],
       "timeline": [
@@ -70,6 +70,86 @@
           "agent": "general-purpose:ac2380a",
           "detail": "completed",
           "sourceKey": "session-stop:a1f9af59e025eebe7"
+        },
+        {
+          "id": "session-stop:a286e3e412b73d163:2026-07-21T16:37:01.125Z",
+          "at": "2026-07-21T16:37:01.125Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:a286e3e412b73d163"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:37:45.370Z",
+          "at": "2026-07-21T16:37:45.370Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:37:55.572Z",
+          "at": "2026-07-21T16:37:55.572Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:38:03.873Z",
+          "at": "2026-07-21T16:38:03.873Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:38:13.971Z",
+          "at": "2026-07-21T16:38:13.971Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:38:20.051Z",
+          "at": "2026-07-21T16:38:20.051Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:38:24.764Z",
+          "at": "2026-07-21T16:38:24.764Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:38:29.216Z",
+          "at": "2026-07-21T16:38:29.216Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:38:33.838Z",
+          "at": "2026-07-21T16:38:33.838Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
+        },
+        {
+          "id": "session-stop:ac2380af8430586bb:2026-07-21T16:38:41.140Z",
+          "at": "2026-07-21T16:38:41.140Z",
+          "kind": "completion",
+          "agent": "general-purpose:ac2380a",
+          "detail": "completed",
+          "sourceKey": "session-stop:ac2380af8430586bb"
         }
       ]
     }
