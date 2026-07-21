@@ -3,8 +3,10 @@
   "use strict";
 
   var WORKS = (window.APAH_WORKS || []).slice();
-  // stable id per work
-  WORKS.forEach(function (w, i) { w.id = i; });
+  function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 64); }
+  // w.id = array index (used in #/work/<id> URLs); w.key = stable slug used as the
+  // saved-progress key, so reordering or updating the dataset never misaligns history.
+  WORKS.forEach(function (w, i) { w.id = i; w.key = slug(w.title + "|" + (w.artist || "")); });
 
   var AREA_NAMES = {
     1: "Global Prehistory", 2: "Ancient Mediterranean", 3: "Early Europe & Colonial Americas",
@@ -19,7 +21,7 @@
   };
 
   /* ---------- spaced repetition (SM-2) ---------- */
-  var LS_KEY = "apah250.srs.v1";
+  var LS_KEY = "apah250.srs.v2";
   var DAY = 86400000;
   var srs = load();
   function load() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { return {}; } }
@@ -47,11 +49,10 @@
     c.ease = Math.max(1.3, c.ease + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
     save();
   }
-  function isDue(id) { var c = srs[id]; return c && c.seen && c.due <= Date.now() && c.interval >= 1 ? true : (c ? c.due <= Date.now() : false); }
   function stats() {
     var learned = 0, due = 0, newc = 0;
     WORKS.forEach(function (w) {
-      var c = srs[w.id];
+      var c = srs[w.key];
       if (!c || !c.seen) { newc++; return; }
       if (c.due <= Date.now()) due++;
       if (c.interval >= 7) learned++;
@@ -94,6 +95,12 @@
 
   /* ---------- router (uses browser history) ---------- */
   function go(hash) { if (location.hash !== hash) location.hash = hash; else render(); }
+  // Replace the current history entry instead of pushing a new one (keeps
+  // search-as-you-type from stacking a Back-button entry per keystroke).
+  function goReplace(hash) {
+    if (location.hash === hash) { render(); return; }
+    location.replace(location.pathname + location.search + hash);
+  }
   window.addEventListener("hashchange", render);
 
   function parseRoute() {
@@ -109,8 +116,11 @@
     clearTimeout(searchT);
     var q = searchEl.value.trim();
     searchT = setTimeout(function () {
-      if (q) go("#/search/" + encodeURIComponent(q));
-      else if (parseRoute().view === "search") go("#/browse");
+      var inSearch = parseRoute().view === "search";
+      // Push one entry when entering search; replace while refining or clearing,
+      // so the whole search occupies a single Back-button step.
+      if (q) { if (inSearch) goReplace("#/search/" + encodeURIComponent(q)); else go("#/search/" + encodeURIComponent(q)); }
+      else if (inSearch) goReplace("#/browse");
     }, 180);
   });
   function matches(w, q) {
@@ -136,7 +146,7 @@
       var a = w.content_area;
       if (!areas[a]) areas[a] = { total: 0, learned: 0 };
       areas[a].total++;
-      var c = srs[w.id]; if (c && c.interval >= 7) areas[a].learned++;
+      var c = srs[w.key]; if (c && c.interval >= 7) areas[a].learned++;
     });
     var areaCards = Object.keys(areas).sort(function (a, b) { return a - b; }).map(function (a) {
       var d = areas[a], p = d.total ? Math.round(d.learned / d.total * 100) : 0;
@@ -271,11 +281,11 @@
     if (scope) pool = pool.filter(function (id) { return WORKS[id].content_area == scope; });
     var due = [], fresh = [];
     pool.forEach(function (id) {
-      var c = srs[id];
+      var c = srs[WORKS[id].key];
       if (!c || !c.seen) fresh.push(id);
       else if (c.due <= Date.now()) due.push(id);
     });
-    due.sort(function (a, b) { return srs[a].due - srs[b].due; });
+    due.sort(function (a, b) { return srs[WORKS[a].key].due - srs[WORKS[b].key].due; });
     shuffle(fresh);
     var NEW_LIMIT = 20;
     var queue = due.concat(fresh.slice(0, NEW_LIMIT));
@@ -288,17 +298,18 @@
     setTab(scope ? "" : "study");
     if (!session || session.scope !== (scope || "")) {
       var q = buildQueue(scope);
-      session = { queue: q, idx: 0, revealed: false, total: q.length, done: 0, scope: scope || "" };
+      session = { queue: q, idx: 0, revealed: false, reviewed: {}, scope: scope || "" };
     }
     renderStudy();
   }
   function renderStudy() {
     if (!session || session.idx >= session.queue.length) {
       var s = stats();
+      var reviewedN = session ? Object.keys(session.reviewed).length : 0;
       app.innerHTML =
         '<div class="study"><div class="study-done">' +
           '<div class="big">✓</div><h2>Session complete</h2>' +
-          '<p>You reviewed ' + (session ? session.done : 0) + ' work' + ((session && session.done === 1) ? "" : "s") + '. ' + s.due + ' still due.</p>' +
+          '<p>You reviewed ' + reviewedN + ' work' + (reviewedN === 1 ? "" : "s") + '. ' + s.due + ' still due.</p>' +
           '<div class="cta-row" style="justify-content:center">' +
             (s.due ? '<button class="btn primary" onclick="APAH.restudy()">Keep going</button>' : "") +
             '<button class="btn" onclick="location.hash=\'#/\'">Back to home</button>' +
@@ -308,7 +319,7 @@
       return;
     }
     var id = session.queue[session.idx], w = WORKS[id];
-    var progress = Math.round(session.done / session.total * 100);
+    var progress = Math.round(session.idx / session.queue.length * 100);
     var meta = [w.date, w.culture, w.location].filter(Boolean).slice(0, 3)
       .map(function (m) { return '<span>' + esc(m) + '</span>'; }).join("");
     var face = session.revealed ?
@@ -334,7 +345,7 @@
     app.innerHTML =
       '<div class="study">' +
         '<div class="study-top">' +
-          '<span class="counts"><b>' + (session.done + 1) + '</b> / ' + session.total + (session.scope ? ' · Area ' + session.scope : "") + '</span>' +
+          '<span class="counts"><b>' + (session.idx + 1) + '</b> / ' + session.queue.length + (session.scope ? ' · Area ' + session.scope : "") + '</span>' +
           '<span class="study-bar"><i style="width:' + progress + '%"></i></span>' +
           '<button class="nav-btn" title="Exit" onclick="location.hash=\'#/\'">✕</button>' +
         '</div>' +
@@ -351,9 +362,9 @@
     rate: function (q) {
       if (!session) return;
       var id = session.queue[session.idx];
-      review(id, q);
-      session.done++;
-      if (q < 3) session.queue.push(id); // requeue lapses
+      review(WORKS[id].key, q);
+      session.reviewed[id] = 1;
+      if (q < 3) session.queue.push(id); // requeue lapses to the end of this session
       session.idx++;
       session.revealed = false;
       renderStudy();
@@ -370,6 +381,7 @@
       else if (session.revealed && ["1", "2", "3", "4"].indexOf(e.key) >= 0) {
         e.preventDefault(); APAH.rate([1, 3, 4, 5][+e.key - 1]);
       }
+      else if (session.revealed && e.code === "Space") { e.preventDefault(); } // don't scroll the page
     }
   });
 
@@ -409,8 +421,9 @@
   var saved = null; try { saved = localStorage.getItem(TH); } catch (e) {}
   if (saved) applyTheme(saved);
   $("#theme").onclick = function () {
-    var cur = document.documentElement.getAttribute("data-theme");
-    if (!cur) cur = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    // Unset means the page is showing light (there is no auto dark-mode media query),
+    // so treat unset as "light" — the first tap always flips to a visibly different theme.
+    var cur = document.documentElement.getAttribute("data-theme") || "light";
     var next = cur === "dark" ? "light" : "dark";
     applyTheme(next); try { localStorage.setItem(TH, next); } catch (e) {}
   };
